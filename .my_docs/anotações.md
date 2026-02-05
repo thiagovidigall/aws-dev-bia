@@ -31,18 +31,20 @@
       - segue usando a primeira opçao: builder Id, copia o endereço e cola no navegador e pronto
       - kiro-cli  (para entrar no cli da AI)
       - para sair /q
+    - Usando o Kiro-CLI
+      - contexto - usar o contexto para delimitar os recursos
+        - dentro da pasta .kyro tem a descricao do contexto nas pasta agents e rules
+      - rodar o commando , kiro-cli --agent "bia"
     - Conectar a EC2 na conta do github
       - gerar a chave ssh com:
         - $ ssh-keygen
       - copiar a chave publica para o github dentro de ssh and gpg keys
       - testar a conexao
         - ssh -T git@github.com  
-      - baixar o repositorio 
-        - git clone git@github.com:thiagovidigall/aws-dev-bia.git
-    - Usando o Kiro-CLI
-      - contexto - usar o contexto para delimitar os recursos
-        - dentro da pasta .kyro tem a descricao do contexto nas pasta agents e rules
-      - rodar o commando , kiro-cli --agent "bia"
+    - Baixar o repositorio 
+      - git clone git@github.com:thiagovidigall/aws-dev-bia.git
+    - 
+    
       
 
 
