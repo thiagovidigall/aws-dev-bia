@@ -1,5 +1,6 @@
 # Passo a Passo AWS
 
+## Dia 1 - Manhã
 - configurar o billing
   - criar um budget (orçamento de 5 dolares)
 - mudar o idioma para ingles
@@ -128,9 +129,79 @@
 
 
 
-# Recursos de uma zona para trabalho
 
-### Sequencia pra a de configuração de recursos
+
+
+
+## Dia 1 - Tarde
+
+#### Passo 1 - Abrir a instancia EC2 e verificar o seu ip publico (3.239.54.104)
+- verificar como esta o docker
+- $ docker ps
+- pegar o ip da instancia por terminal
+- $ curl ifconfig.me
+- acessar o app que esta rodando na porta 3001 no browser com o ip publico
+- http://3.239.54.104:3001
+- status offline, pois front no ip public e api está no localhost
+- o app esta dentro do ec2, publicado com docker, 
+- o docker subiu o front, db, mas o dockerfile do projeto está apontando para api em localhost
+
+##### Ajustando o dockerfile para api subir no ip public e não localhost
+- $ nano Dockerfile  (troca o localhost para ip e salvar e sair)
+- $ docker compose down
+- $ docker compose build server  (criar uma nova imagem)
+  - porque fazer um build, pq no compose.yml tenho os services 
+- $ docker compose up -d
+- o projeto subiu mas sem as tabelas temos rodar o migrate
+- dentro do README.md tem esse passo
+- $ docker compose exec server bash -c 'npx sequelize db:migrate' (agora vai persistir)
+- acessar o agent para ver se ele consegue interagir
+- $ kiro-cli chat --agent "bia"
+  - prompt: verifique os registros que tenho na tabela de tarefas
+  - $ docker compose down  (parar a bia na maquina de trabalho)
+
+#### Passo 2 
+- Ajustar o security group para criar um cluster ECS, ECR, RDS, bia-web...
+- vamos manter a bia-dev com os nossos agentes (MCP Post/EC2)
+- para o cluster criar a estrutura de sg, não fazer atraves de ips
+  - para associar o RDS vamos criar o SG "bia-db"
+  - para ... vamos criar o SG "bia-web" liberado para o mundo (0.0.0.0/0) na porta 80
+    - vou precisar de um EC2 ?
+  - para o primeiro EC2 temos o SG "bia-dev" liberado para o mundo na porta 80
+
+##### Criar o bia-bd
+- qual estrutura de comunicação eu preciso estabelecer no bia-db?
+  - liberar porta de entrada (inbound) 5432 para permitir comunicação com o bia-web adicionar sg-bia-web na (rota), não colocar 0.0.0.0/0 e porta
+    - mas porque o bia-web? aplicação/ instancia de produção 
+    - aqui não tem responsabilidade de manutenção, migrates, ..., é roda o app
+    - aqui é só aplicação, só a publição/produção, não podemos rodar comandos de banco 
+  - ??? liberar porta de entrada (inbound) 5432 para permitir comunicação com o bia-dev
+    - mas porque o bia-dev tambem? para que o agente possa continuar atuando/auxiliando em tarefa no banco
+    - ele é responsavel por dar manutenção no bd, roda migrates, etc
+  - Liberar o bia-dev usando o agente, usando trobleshoot, ele vai descobrir o problema de comunicação e adicionar o inbound para o bia-dev    
+
+##### Usando o bia-dev
+- ele vai rodar as migrates e interagir com o RDS
+- mas em um ambiente real não preciso disso posso fazer tudo nas pipelines
+
+##### Criar o RDS para MULTI-AZ
+- em Aurora and RDS vai em criate database
+
+
+
+
+
+
+## Recursos criados que tenho que deletar na zona para trabalho
+1. uma instancia EC2
+2. security groups (SGs)
+ - bia-dev
+ - bia-web
+ - bia-db
+3. um RDS database
+4. 
+
+## Sequencia pra a de configuração de recursos
 
 - 1º VPC
 - 2º Subnet
