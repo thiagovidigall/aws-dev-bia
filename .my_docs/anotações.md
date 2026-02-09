@@ -116,22 +116,6 @@
       - ec2containerregistrypoweruser
     - verficando se as polices adicionadas estão funcinando
       - $ aws ecr describe-repositories
-      - 
-
-
-
-      
-
-
-
-
-
-
-
-
-
-
-
 
 ## Dia 1 - Tarde
 
@@ -160,7 +144,7 @@
   - prompt: verifique os registros que tenho na tabela de tarefas
   - $ docker compose down  (parar a bia na maquina de trabalho)
 
-#### Passo 2 
+#### Passo 2 - Criar os SGs
 - Ajustar o security group para criar um cluster ECS, ECR, RDS, bia-web...
 - vamos manter a bia-dev com os nossos agentes (MCP Post/EC2)
 - para o cluster criar a estrutura de sg, não fazer atraves de ips
@@ -184,8 +168,109 @@
 - ele vai rodar as migrates e interagir com o RDS
 - mas em um ambiente real não preciso disso posso fazer tudo nas pipelines
 
-##### Criar o RDS para MULTI-AZ
+#### Passo 3 - Criar o RDS para MULTI-AZ
 - em Aurora and RDS vai em criate database
+- marcar e desmarcar as opções:
+1. postgresql 17.6R
+2. dev/test ou Sandbox (não precisa de dar upgrade no plano agora)
+3. single-AZ (Multi-AZ só no plano pago)
+4. colocar nome da instancia "bia"
+5. marcar para gerar credentias (vai ser mostrado ao final, tem que salvar a senha)
+6. instancia escolher t3.micro
+7. disco com 20gb
+8. desmarcar "enable storage autoscaling"
+9. security group deve escolher o "bia-db" apenas
+10. desmarcar monitoramento "Enable Performace Insights" e deixar o "Standard"
+11. dexar em branco o nome inicial do banco, pois vai ser setado ao rodar a migrations
+12. desmarcar backup "Enable automated backup"
+13. deixar marcado (já vem com default) "Enable encryp..."
+14. pegar a senha no final da criação 
+15. pegar a url 
+
+#### Passo 4 - Criar o ECR - Elastic Container Registry
+1. criar o repositorio "bia"
+2. voltar para a instancia EC2 e executar o commando "$ docker images", achar a imagem bia-server
+3. imagem está local (dentro do ec2), temos que mandar para o ECR
+4. dentro ECR entrar em "view push commands" para pegar o endereço "600161851259.dkr.ecr.us-east-1.amazonaws.com" e sigo os comandos ou uso o script da pasta "scripts/ecs/unix/
+build.sh"
+5. dentro do ec2 pasta "aws-dev-bia" copio o script para a raiz
+6. $ cp scripts/ecs/unix/build.sh .
+7. $ nano build.sh para atualizar a variavel "ECR_REGISTRY" com o endereço do ECR
+8. $ chmod +x build.sh  (dou permissão para poder exercutar)
+9. Deletar depois - faz cobrança por imagem armazenada nele (gb/mes ou transferencia p/ fora push)
+
+#### Passo 5 - Usando o ECS - Elastic Container Service
+1. criar o cluster (poder computacional, precisa colocar maquinas nele, precisa colocar o serviço para as maquinas rodarem)
+  - dentro de ECS -> cluster - criate cluster
+  1. escolher opcao "Fargate and Self-managend instances"
+  2. trabalhar com modelo que dizemos qtas instancias vamos querer
+  3. escolher create a new auto scaling group
+  4. escolher Fargate and Self-managed instances
+  5. escolher on-demand
+  6. escolher tipo t3.micro
+  7. criar uma default role
+  8. Desired capacity 1 - 1
+  9. escolher zonas Network settings -> zonas "a" e "b", remover as outras
+  10. escolher o SG "bia-web" como no desenho, remover os outros
+  11. tambem foi criada uma role default para o cluster, antes só tinhamos a role-acesso-ssm
+    - agora tem uma nova com prefixo ecs
+  12. para deletar o cluster
+    - primeiro entrar em services e deletar todos os services
+    - segundo na aba tasks dar um stop
+    - vai em EC2 - depois em loadbalancer e deletar o loadbalancer do ecs
+    - se for um Fargate não tem EC2 para apagar
+    - se for um EC2 tem que encerrar em EC2: instancias + Auto Scaling groups + Launch Templates
+    - tb verificar o CloudFormation Stacks tem que ficar zerada
+    - ficou zerado tudo em Auto Scaling groups + Launch Templates
+    - outras coisas que podem ficar par traz e trazem custos
+      - Amazon ECR
+      - CloudWatch Logs
+    - revisão confirme que:
+        Não existe Service ativo
+        Não existe Task rodando
+        Não existe Load Balancer
+        Não existe Target Group
+        Não existe EC2 / ASG
+        Cluster deletado
+        ECR limpo (opcional)
+
+
+2. criar task definition (uma task é um container, mas podemos ter mais de um container por task)
+  - para criar a task definitio ir no menu as esquerda e clicar em "Task Definition" depois "create new task definition"
+  - definir o nome para family: "task-def-bia"
+  - marcar para trabalhar com instancias EC2 "Amazon EC2 instances"
+  - escolher network mode por padrão escolher "bridge"
+  - em task size, apagar CPU e apagar o conteudo de Memory
+  - dentro da aba "Container"
+    - em "Name" colocar "bia"
+    - em "imagem URI" temos que entrar em ECR e marcar e copiar a URI (latest)
+    - em "Host port" onde vai rodar a aplicação "Host port=80" e "container port=8080" e port-name "qqer um"
+    - em "CPU=1" e "Memory soft limit = 0,4" o resto deixa em branco
+    - em "Environment variables" pegar do compose.yml dentro do "bia-dev" ou do github
+      - $ nano compose.yml
+      - adicinar as variaveis:
+        DB_USER: postgres
+        DB_PWD: senha copiada qdo subiu o RDS
+        DB_HOST: ir no RDS e copiar o nome do host
+        DB_PORT: 5432
+    - clicar em criate 
+    - apos criado achar a opção de "Deploy" e dentro dele "create service"
+      - em "service name" colocar "service-bia"
+      - em "Launch type" escolher depois "EC2"      
+      - em "deploynment configuration" escolher "Replica"
+      - em "Availability Zone rebalancing" não faz sentido deixar marcado pois só temos 1 task
+      - em depolyements stategy deixar marcado "Rolling update" ele vai substituindoas tasks gradualmente      
+      - escolher Min running tasks % colocar 0
+      - escolher Max 100
+      - desmarcar Deployment failure detection  Info, pois qdo der erro vai parar, daí conseguimos ver o que aconteceu
+      - em "Task placement" deixar por padrão espalhar as tasks na AZ disponiveis
+
+
+3. criar o service  (responsavel por lançar os container as "tasks"), ele é o task definition (primo do compose)
+4. o "task definition" muda um pouquinho do compose pois terá informações da imagem, variáveis de ambiente, e fornecer o recurso computacional que vai ser alocado.
+
+
+
 
 
 
