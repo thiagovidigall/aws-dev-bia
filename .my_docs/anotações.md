@@ -306,7 +306,25 @@ build.sh"
 6. Fazer o versionamento do deploy com AI
 - cada deploy deve guardar task definitions com as informações
   - entao dentro de ECS e depois Task definitions deve ser incrementado ex: task-def-bia:4, depois task-def-bia:6, ...
-- 
+- $ prompt: estou precisando de um rotina de deploy que não sobreponha a que eu já tenho, quero que essa rotina de deploy seja simples, mas permita que eu trabalhe com versionamento no ECS. Eu preciso trabalhar com commit hash para criar tags das minhas versoes no ECR e com isso voce vai gerar uma task definition para cada uma delas e realizar o deploy no ECS. Analise o que precise ser feito para que eu veja antes de estar tudo ok.
+- depois que ele rodar tudo
+- $ crie um readme explicando sobre o novo deploy que vc criou
+- $ o nome do cluster é cluster-bia e do meu service é service-bia... veja tambem o nome da minha task definition
+- $ vc pode fazer o primeiro deploy para mim?
+- $ git add .
+- $ git commit -m "add new deploy"
+
+7. Configuração de dominio ( Route 53 e ACM/Certificate Manager)
+- Route 53 - controle do dominio e subdominio, entrada dos DNS
+  - criar uma hosted zones, e pegar os endereços ns e atualizar lá no registro.br
+- ACM - certificado digital para https
+  - criar o certificado no ACM e autorizar no Route 53 atraves de entradas DNS
+  - ele monitora as entradas e fala ele esta querendo entrar no dominio ele é o dono, então vai
+  - dentro do acm, criar um request "request public certificate"
+  - colocar o "fully qualified domain name" específico bia.devblue.com.br ou *.devblue.com.br para resolver qualquer coisa dentro do devblue
+  - 
+8. revisão do dia 1
+- prompt: forneça um diagnostico simples da minha aplicação, confirmando se ela esta rodando perfeitamente no ecs
 
 
 
