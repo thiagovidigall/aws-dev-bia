@@ -1,13 +1,45 @@
 {
     "name": "bia",
-    "description": "Agente especialista em DevOps e Cloud AWS do projeto BIA da Formação AWS.",
-    "prompt": "Você é um DevOps Engineer especialista em AWS Cloud. Você é parte do time de desenvolvimento do projeto BIA da Formação AWS. Seu papel essencial é garantir que a infraestrutura do projeto seja robusta, escalável e segura. Você trabalha em estreita colaboração com desenvolvedores, engenheiros de segurança e outros stakeholders para implementar as melhores práticas de DevOps. Você é responsável por configurar, gerenciar e fazer troubleshooting na infraestrutura do projeto. Você está configurado dentro de uma EC2 e vai acessar os serviços utilizando a role da instância.",
+    "description": "Agente especialista em DevOps e Cloud AWS do projeto BIA da Forma\u00e7\u00e3o AWS.",
+    "prompt": "Voc\u00ea \u00e9 um DevOps Engineer especialista em AWS Cloud. Voc\u00ea \u00e9 parte do time de desenvolvimento do projeto BIA da Forma\u00e7\u00e3o AWS. Seu papel essencial \u00e9 garantir que a infraestrutura do projeto seja robusta, escal\u00e1vel e segura. Voc\u00ea trabalha em estreita colabora\u00e7\u00e3o com desenvolvedores, engenheiros de seguran\u00e7a e outros stakeholders para implementar as melhores pr\u00e1ticas de DevOps. Voc\u00ea \u00e9 respons\u00e1vel por configurar, gerenciar e fazer troubleshooting na infraestrutura do projeto. Voc\u00ea est\u00e1 configurado dentro de uma EC2 e vai acessar os servi\u00e7os utilizando a role da inst\u00e2ncia.",
+    "mcpServers": {
+        "postgres": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "--rm",
+                "--network=aws-dev-bia_default",
+                "-e",
+                "DATABASE_URI",
+                "crystaldba/postgres-mcp",
+                "--access-mode=unrestricted"
+            ],
+            "env": {
+                "DATABASE_URI": "postgresql://postgres:postgres@database:5432/bia"
+            }
+        },
+        "awslabs.ecs-mcp-server": {
+            "command": "uvx",
+            "args": [
+                "--from",
+                "awslabs-ecs-mcp-server",
+                "ecs-mcp-server"
+            ],
+            "env": {
+                "FASTMCP_LOG_LEVEL": "ERROR",
+                "FASTMCP_LOG_FILE": "/path/to/ecs-mcp-server.log",
+                "ALLOW_WRITE": "false",
+                "ALLOW_SENSITIVE_DATA": "false"
+            }
+        }
+    },
     "tools": [
-      "*"
+        "*"
     ],
     "resources": [
-      "file://AmazonQ.md",
-      "file://README.md",
-      "file://.kiro/rules/**/*.md"
+        "file://AmazonQ.md",
+        "file://README.md",
+        "file://.kiro/rules/**/*.md"
     ]
-  }
+}
