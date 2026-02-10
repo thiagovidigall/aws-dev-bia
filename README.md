@@ -9,3 +9,4 @@
 docker compose exec server bash -c 'npx sequelize db:migrate'
 ```
 
+# Test deploy Tue Feb 10 14:50:00 UTC 2026
