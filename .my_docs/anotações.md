@@ -267,12 +267,46 @@ build.sh"
 
 
 3. criar o service  (responsavel por lançar os container as "tasks"), ele é o task definition (primo do compose)
-4. o "task definition" muda um pouquinho do compose pois terá informações da imagem, variáveis de ambiente, e fornecer o recurso computacional que vai ser alocado.
+- o "task definition" muda um pouquinho do compose pois terá informações da imagem, variáveis de ambiente, e fornecer o recurso computacional que vai ser alocado.
+- acesso ao serviço disponivel: http://3.239.247.28/
 
+4. estabelecar comunicação da bia-dev (maquina de trabalho) para bia-db e rodar o migrate para criação das tabelas
+ - $ nano compose.yml
+   - ajustar o "environment"
+     - db_pwd: .... colocar o psw do rds
+     - db_host: ... colocar o endereço do rds
+ - $ docker ps
+ - $ docker compose down
+ - $ docker compose up -d
+ - $ comando para rodar a migrate dentro do README.md, mas eu não crie comunicacao (sg do bia db aceitando o bia-dev)
+   - docker compose exec server bash -c 'npx sequelize db:migrate'
+   - para resolver vamos usar o AI para criar essa comunicação
+   - kiro-cli chat --agent "bia"
+   - prompt: estou tentando rodar as migrates que eu tenho no projeto para o meu banco no rds, mas esta acontecendo uma demora absurda. consegue me ajudar a identificar o que pode estar acontecendo? estou tentando rodar esse comando: docker compose exec server bash -c 'npx sequelize db:migrate'
 
+5. Fazer o deploy dentro do bia-dev (antes fizemos o migrate no RDS)
+- alterar o texto do botao html dentro do bia-dev
+  - ir ate AddTask.jsx dentro do clent/scr/components
+- alterar o endereço para a instancia do ECS
+  - nano Dockerfile, altero o ip para o novo ip da instancia da ECS
+    - nao tem a porta 3001, apenas o endereço ip sem barra tb
+- roda o script de build
+  - $ cat build.sh
+  - $ nao preciso dar o comando de build pois o deploysh faz (./build.sh)
+  - $ cp scripts/ecs/unix/deploy.sh .
+  - $ nano deploy
+    $ alterar o [cluster] e [service] para cluster-bia e service-bia sem os []
+  - $ chmod +x deploy.sh
+  - $ ./deploy.sh
+  - se for no cluster (ECS), dentro de service, tem aba deploynments para aconpanhar o processo
+  - ser for (ECR) dá para ver as duas imagens uma as 15h e outra as 22h
+- dispara um push para o ECR, depois dispara um deploy para o ECS
+- problema de deploy pois um sobrepoe ao outro
 
-
-
+6. Fazer o versionamento do deploy com AI
+- cada deploy deve guardar task definitions com as informações
+  - entao dentro de ECS e depois Task definitions deve ser incrementado ex: task-def-bia:4, depois task-def-bia:6, ...
+- 
 
 
 
