@@ -326,6 +326,77 @@ build.sh"
 8. revisão do dia 1
 - prompt: forneça um diagnostico simples da minha aplicação, confirmando se ela esta rodando perfeitamente no ecs
 
+## Dia 2  - Manhã
+
+#### Passo 1 - Security groups para alta disp9onivilidade
+- criar o sg "bia-alb" com all TCP apenas para o ALB, para comunicar com o novo sg "bia-ec2"
+  - add 1 inbound rules type http (porta 80),  source type ipv4, 0.0.0.0/0, liberado geral para fora
+  - add 1 inbound rules type https (porta 443), source type ipv4, 0.0.0.0/0 liberado geral para fora
+- criar o sg "bia-ec2"
+  - add 1 inbound rules type "all tcp" para o source custom sg "bia-alb", liberado tudo para o "bia-alb"
+- alterar o sg "bia-db" para aceitar trafego (inbound) do "bia-ec2"
+  - add 1 inbound rules type "postgres" para o source custom sg "bia-ec2", liberado banco para o "bia-ec2"
+
+#### Passo 2 - ALB - Target group
+- ALB - load balanced tem um listener ( para escutar a porta 80 ) e daí manda para o target group
+  - Target group vai rotear os trafego para as instancias EC2 que fazem parte do cluster
+    - o tg encaminha as requisicoes para as instancias ec2
+    - caso uma das instancia estiver fazendo deploy o tg deve parar de mandar requisicoes para aquela instancia, qual tempo devo drenar as conexoes ate que ela morra (tem que vc quer deixar o fluxo aberto (padrao 300), vou deixar 30s)
+  - tambem para as tasks (containers)
+  - comunicação all tcp com as portas 80 e 443 (https)
+- Ir em Ec2 -> Load Balancing -> load Balancers
+  - create load banlancer e escolher http e https
+  - "definir name bia-alb", internet-facing, ipv4, escolher uma vpc ou (default), 
+  - marcar zona a e b
+  - escolher o sg "bia-alb"
+  - vai mandar para onde? target group (criar um ...)
+    - selecionar o target type instancis  (Ec2)
+    - name "tg-bia"
+    - tudo padrao, next, next, create ..
+    - depois de criado, vai na aba horizontal "Attributes"
+#### Passo 3 - Remover o cluster anterior e criar um novo
+- abrir o ECS e marcar o "cluster-bia"
+  - primeiro ir na aba horizontal "service" e deletar o service (marcar forçar)
+  - segundo ir para o cluster e deletar o cluster
+  - criar novo cluster
+    - colocar name "cluster-bia-alb"
+    - selecionar infrastructure: fargate and self-managed
+    - create new auto scaling
+    - on-demand
+    - amazon linux 2023 + t3.micro
+    - ec2 instance selecionar "ecsInstanceRole"
+    - Minimum 2 e Maximum 2
+    - vpc default com subnet a e b
+    - create ( vai conter dentro de infraestructure 2 instancia de ec2)
+  - criar task definition
+    - seleciona a "task-def-bia" e seleciona a ultima revisão
+    - dai selecionar "create new revision json" e ajustar o json
+      - "family": "task-def-bia-alb",
+      - "name": "porta-aleatoria",
+      - "hostPort": 0,
+      - "awslogs-group": "/ecs/task-def-bia-alb",
+      - salvar, dai escolher "deploy" e "create service"
+    - dentro da criação do service
+      - name "service-bia-alb"
+      - compute options  "Launch type" para EC2      
+      - Scheduling strategy "Replica" para "2"
+      - desmarcar o "Turn on Availability Zone rebalancing"
+      - Deployment strategy "Rolling update"  "50 e "100"
+      - desabilitar o "Deployment failure detection  Info"
+      - marcar "Use load balancing"
+      - selecionar vpc (padrao)
+      - marcar "Load balancer type"
+      - Container
+        - aqu- eu me perdi no vido é 8080:8080 e o meu ficou 80:8080
+      - Application Load Balancer use "Use an existing load balancer" e seleciona "bia-alb"
+      - Listener escolher "Use an existing listene" e padrao "HTTP:80"
+      - target grupo selecionar o "tg-bia"
+      - "Task placement Info" escolher "AZ balanced spread"
+      - create, daí ele vai lançar duas tasks automaticamento depois que o seviço foi criado
+    - Como testar?
+      - vai em Load Balancers "bia-alb" e copia o dns e coloca no navegador
+        - Load balancers http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/
+
 
 
 
