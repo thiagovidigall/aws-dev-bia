@@ -397,8 +397,62 @@ build.sh"
       - vai em Load Balancers "bia-alb" e copia o dns e coloca no navegador
         - Load balancers http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/
 
+#### Passo 4 - Bia com alta disponibilidade - 
+- Acessar o app pelo ALB
+  - vai em Load Balancers "bia-alb" e copia o dns e coloca no navegador
+    - Load balancers http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/
+- Explorar o resource map
+  - EC2 -> load balancers -> bia-alb -> 
+    - aba horizontal -> "Resource map"
+      - mostra o fluxo que esta acontecendo saindo do loadbalane até nossas tasks (listener->regra padrao(semr egra)->target group->roteamento do tráfego (rotas))
+      - mostra que o ambiente está saudável
+      - 
+  - EC2 -> target Groups -> tg-bia
+    - mostra 2 instancias como "healthy"
+    - mostra a distribuição por AZ (zona) e mostra se está saudável
+- Fazer o deploy ajustando rota no Dokerfile
+  - copiar o endereço do aplication load balance
+  - ir em instancias e conectar na bia-dev (vai ser nela que vou alterar os scripts de deploy)
+  - editar o dockerfile
+    - $ nano /aws-dev-bia/Dockerfile, trocar o endereço http://bia-alb-2034249656.us-east-1.elb.amazonaws.com
+    - $ nano deploy.sh   # mudar para o cluster-bia-alb e mudar o service par service-bia-alb
+      - o script de deploy.sh esta simples e trabalha só com latest, temos que ir no ECS e depois no task definition para ver onde ele está apontando
+      - abrir o "task-def-bia-alb", e clinar na ultima revision
+      - criar "new revision", dentro achar "Image URI" e alterar o final para "...bia:latest" e "create"
+      - depois vai em "deploy" e dentro escolher "update service" e depois rolar a tela para baixo e "update"
+      - apos alterações voltar para o "bia-dev" e execuptar o script "$ ./deploy.sh"
+    - $ ./deploy.sh  
+    - se ficar preso o console na hora do deploy usar :"q" para sair
+    - ir no ECR e ver que a ultima versão estara escrito "latest" com a data da execução
+    - quero ver o deploy vou em ECS -> Clusters -> cluster-bia-alb -> Services -> service-bia-alb - aba H "Deployment"
+    - quero ver a disponibilidade do deploy via script simples
+      - entrar no "bia-dev"
+      - vou abrir uma instancia e entrar na pasta home com usuario "ec2-user" depois na pasta "aws-dev-bia"      
+      - $ cp scripts/ecs/unix/check-disponibilidade.sh
+      - $ ./check-disponibilidade.sh
+    - quero fazer um teste e atualizar o botão da app e ver se ela vai cai e o que vai acontecer
+    - para isso 
+      - abrir 2 terminais da bia-dev
+        - na primeio deixo preparado para disparar o "./check..."
+        - no segundo atualizo o botão e dou um deploy
+        - endereço http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/api/versao uso como healfycheck
+        - para acompanhar na AWS, podemos ver direto no ECS - cluster - "cluster-bia-alb"/"service-bia-alb"
+          - em Service revisions (2) 
+            - no Target (versão nova/destino) vai ter 1 Requested (0 - Running)
+            - no Source (versao antiga/fonte) vai ter 1 Requested (1 - Running)
+            - Obs ( Antes de disparar)
+              - 7649397389232491386|View tasks-Target-2 Requested-2 Running-0 Pending-task-def-bia-alb:2
+              - 7777165179419921139|View tasks-Source-0 Requested-0 Running-0 Pending-task-def-bia-alb:2
+            - Obs ( Depois de disparar)
+              - 
+#### Passo 5 - Problema(Deploy precisa de um script na nossa maquina para acontecer) -  Solução(Pipeline CI/CD)
 
 
+
+## Dia 2  - Tarde
+
+
+- Teste pela rota de backend (/api/versao)
 
 ## Recursos criados que tenho que deletar na zona para trabalho
 1. uma instancia EC2
