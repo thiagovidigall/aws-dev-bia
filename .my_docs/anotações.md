@@ -1,6 +1,7 @@
 # Passo a Passo AWS
 
 ## Dia 1 - Manhã
+
 - configurar o billing
   - criar um budget (orçamento de 5 dolares)
 - mudar o idioma para ingles
@@ -22,9 +23,9 @@
   - Entrar na instancia EC2, conect por Session Manager (SSM), trocar para o usurio default
     - $ sudo su ec2-user
     - $ cd /home/ec2-user
-    - Baixar o Kiro-CLI ( https://kiro.dev/docs/cli/installation/ )
+    - Baixar o Kiro-CLI ( [https://kiro.dev/docs/cli/installation/](https://kiro.dev/docs/cli/installation/) )
       - $ ldd --version
-      - $ curl --proto '=https' --tlsv1.2 -sSf 'https://desktop-release.q.us-east-1.amazonaws.com/latest/kirocli-x86_64-linux.zip' -o 'kirocli.zip'
+      - $ curl --proto '=https' --tlsv1.2 -sSf '[https://desktop-release.q.us-east-1.amazonaws.com/latest/kirocli-x86_64-linux.zip](https://desktop-release.q.us-east-1.amazonaws.com/latest/kirocli-x86_64-linux.zip)' -o 'kirocli.zip'
       - $ unzip kirocli.zip
       - $ ./kirocli/install.sh
       - $ kiro-cli login --use-device-flow
@@ -41,9 +42,9 @@
         - $ ssh-keygen
       - copiar a chave publica para o github dentro de ssh and gpg keys
       - testar a conexao
-        - ssh -T git@github.com  
+        - ssh -T [git@github.com](mailto:git@github.com)
     - Baixar o repositorio 
-      - git clone git@github.com:thiagovidigall/aws-dev-bia.git
+      - git clone [git@github.com](mailto:git@github.com):thiagovidigall/aws-dev-bia.git
     - Rodar o container docker
       - cd /home/ec2-user
       - cd aws-dev-bia
@@ -51,90 +52,91 @@
     - Vou na instancia EC2 para copiar o ip
       - ir no navegador e digitar http:ip.x.x.x:3001
     - Instalar o MCP agent do banco
-      - https://github.com/crystaldba/postgres-mcp
+      - [https://github.com/crystaldba/postgres-mcp](https://github.com/crystaldba/postgres-mcp)
       - copiar o conteudo do arquivos .kiro/mcp-db.json
       - colar em .kiro/agents/bia.json
       - $ nano .kiro/agents/bia.json
-          - comandos do nano
-            Ctrl + O → salvar
-            Enter → confirmar
-            Ctrl + X → sair
-            Ctrl + W → procurar texto
-            Ctrl + K → recortar linha
-            Ctrl + U → colar linha
-            Ctrl + Shift + v → colar do host para o browser ec2 dentro do promnt
-            Alt + U → desfazer
-            Alt + E → refazer
-            Ctrl + G → ajuda
+        - comandos do nano
+        Ctrl + O → salvar
+        Enter → confirmar
+        Ctrl + X → sair
+        Ctrl + W → procurar texto
+        Ctrl + K → recortar linha
+        Ctrl + U → colar linha
+        Ctrl + Shift + v → colar do host para o browser ec2 dentro do promnt
+        Alt + U → desfazer
+        Alt + E → refazer
+        Ctrl + G → ajuda
         $ python3 -m json.tool bia.json > tmp && mv tmp bia.json
       - cuidado com o nome da rede, se não especificado no compose.yml ele vai usar o nome
       da pasta + default no meu caso a pasta é aws-dev-bia entao vai ficar 
       --network=aws-dev-bia_default 
       - rodar o kiro-cli com o MCP que foi configurado
-         - $ na raiz do projeto:
-           - kiro-cli chat --agent "bia"
-           - /q para sair do kiro
+        - $ na raiz do projeto:
+          - kiro-cli chat --agent "bia"
+          - /q para sair do kiro
     Instalar o MCP agent do ec2
-      - https://awslabs.github.io/mcp/servers/ecs-mcp-server/
-      - uv venv
-      - uv pip install awslabs.ecs-mcp-server
-      - copiar o conteudo do arquivos .kiro/mcp-ecs.json
-      - colar em .kiro/agents/bia.json
-      - $ nano .kiro/agents/bia.json
-      -  executar o kiro-cli:
-        - primeiro voltar para a pasta raiz do projeto ( aws-dev-bia )
-        - $ kiro-cli chat --agent "bia"
-          - aqui digitar: lista para mim os meu clusters no ecs
+    - [https://awslabs.github.io/mcp/servers/ecs-mcp-server/](https://awslabs.github.io/mcp/servers/ecs-mcp-server/)
+    - uv venv
+    - uv pip install awslabs.ecs-mcp-server
+    - copiar o conteudo do arquivos .kiro/mcp-ecs.json
+    - colar em .kiro/agents/bia.json
+    - $ nano .kiro/agents/bia.json
+    - executar o kiro-cli:
+    - primeiro voltar para a pasta raiz do projeto ( aws-dev-bia )
+    - $ kiro-cli chat --agent "bia"
+      - aqui digitar: lista para mim os meu clusters no ecs
   Conteinizar com ajuda da AI
-    - prompt: eu gostaria de criar um novo dockerfile para o meu , seguindo a filosofia simples, pois estou fazendo uma demostração ao vivo, para ver se vc é capaz de nos ajudar, o meu problema roda externamente na port 3001, apois gerar o dockerfile, me passe a instrucao par rodar o meu container (nao sobreponha o que ja tenho na raiz do projeto)
-      -saida:
-        - ##### Build da imagem
-          docker build -f Dockerfile.demo -t bia-demo .
-        - ##### Executar o container (mapeando porta 3001)
-          docker run -p 3001:3001 bia-demo
-        - ##### Testar o health check
-          curl http://localhost:3001/api/versao  
-    - prompt: teste para mim
-      - saida:
-         ##### Build da imagem
-        docker build -f Dockerfile.demo -t bia-demo .
-        ##### Executar o container (mapeando porta 3001)
-        docker run -p 3001:3001 bia-demo
-        ##### Testar o health check
-        curl http://localhost:3001/api/versao
-        
+  - prompt: eu gostaria de criar um novo dockerfile para o meu , seguindo a filosofia simples, pois estou fazendo uma demostração ao vivo, para ver se vc é capaz de nos ajudar, o meu problema roda externamente na port 3001, apois gerar o dockerfile, me passe a instrucao par rodar o meu container (nao sobreponha o que ja tenho na raiz do projeto)
+  -saida:
+    - ##### Build da imagem
+      docker build -f Dockerfile.demo -t bia-demo .
+    - ##### Executar o container (mapeando porta 3001)
+      docker run -p 3001:3001 bia-demo
+    - ##### Testar o health check
+      curl http://localhost:3001/api/versao
+  - prompt: teste para mim
+    - saida:
+      ##### Build da imagem
+      docker build -f Dockerfile.demo -t bia-demo .
+      ##### Executar o container (mapeando porta 3001)
+      docker run -p 3001:3001 bia-demo
+      ##### Testar o health check
+      curl http://localhost:3001/api/versao
   Trabalhando com IAM
-    - tarefas:
-      - roles para nossa ec2 de trabalho
-      - testando permissoes: aws ecr describe-repositories
-      - adicionando permissao para os serviços que vamos explirar
-        - RDS, ECR, ECS, EC2
-    - configurando o IAM, roles, achar a role "role-acesso-ssm" e adicionar polices
-      - rdsfullaccess  ( para banco )
-      - ecsfullaccess  ( para deploy - clusters )
-      - ec2fullaccess  ( para trobleshoote, verificar security group )
-      - ec2containerregistrypoweruser
-    - verficando se as polices adicionadas estão funcinando
-      - $ aws ecr describe-repositories
+  - tarefas:
+    - roles para nossa ec2 de trabalho
+    - testando permissoes: aws ecr describe-repositories
+    - adicionando permissao para os serviços que vamos explirar
+      - RDS, ECR, ECS, EC2
+  - configurando o IAM, roles, achar a role "role-acesso-ssm" e adicionar polices
+    - rdsfullaccess  ( para banco )
+    - ecsfullaccess  ( para deploy - clusters )
+    - ec2fullaccess  ( para trobleshoote, verificar security group )
+    - ec2containerregistrypoweruser
+  - verficando se as polices adicionadas estão funcinando
+    - $ aws ecr describe-repositories
 
 ## Dia 1 - Tarde
 
 #### Passo 1 - Abrir a instancia EC2 e verificar o seu ip publico (3.239.54.104)
+
 - verificar como esta o docker
 - $ docker ps
 - pegar o ip da instancia por terminal
 - $ curl ifconfig.me
 - acessar o app que esta rodando na porta 3001 no browser com o ip publico
-- http://3.239.54.104:3001
+- [http://3.239.54.104:3001](http://3.239.54.104:3001)
 - status offline, pois front no ip public e api está no localhost
 - o app esta dentro do ec2, publicado com docker, 
 - o docker subiu o front, db, mas o dockerfile do projeto está apontando para api em localhost
 
 ##### Ajustando o dockerfile para api subir no ip public e não localhost
+
 - $ nano Dockerfile  (troca o localhost para ip e salvar e sair)
 - $ docker compose down
 - $ docker compose build server  (criar uma nova imagem)
-  - porque fazer um build, pq no compose.yml tenho os services 
+  - porque fazer um build, pq no compose.yml tenho os services
 - $ docker compose up -d
 - o projeto subiu mas sem as tabelas temos rodar o migrate
 - dentro do README.md tem esse passo
@@ -145,6 +147,7 @@
   - $ docker compose down  (parar a bia na maquina de trabalho)
 
 #### Passo 2 - Criar os SGs
+
 - Ajustar o security group para criar um cluster ECS, ECR, RDS, bia-web...
 - vamos manter a bia-dev com os nossos agentes (MCP Post/EC2)
 - para o cluster criar a estrutura de sg, não fazer atraves de ips
@@ -154,23 +157,27 @@
   - para o primeiro EC2 temos o SG "bia-dev" liberado para o mundo na porta 80
 
 ##### Criar o bia-bd
+
 - qual estrutura de comunicação eu preciso estabelecer no bia-db?
   - liberar porta de entrada (inbound) 5432 para permitir comunicação com o bia-web adicionar sg-bia-web na (rota), não colocar 0.0.0.0/0 e porta
     - mas porque o bia-web? aplicação/ instancia de produção 
     - aqui não tem responsabilidade de manutenção, migrates, ..., é roda o app
-    - aqui é só aplicação, só a publição/produção, não podemos rodar comandos de banco 
+    - aqui é só aplicação, só a publição/produção, não podemos rodar comandos de banco
   - ??? liberar porta de entrada (inbound) 5432 para permitir comunicação com o bia-dev
     - mas porque o bia-dev tambem? para que o agente possa continuar atuando/auxiliando em tarefa no banco
     - ele é responsavel por dar manutenção no bd, roda migrates, etc
-  - Liberar o bia-dev usando o agente, usando trobleshoot, ele vai descobrir o problema de comunicação e adicionar o inbound para o bia-dev    
+  - Liberar o bia-dev usando o agente, usando trobleshoot, ele vai descobrir o problema de comunicação e adicionar o inbound para o bia-dev
 
 ##### Usando o bia-dev
+
 - ele vai rodar as migrates e interagir com o RDS
 - mas em um ambiente real não preciso disso posso fazer tudo nas pipelines
 
 #### Passo 3 - Criar o RDS para MULTI-AZ
+
 - em Aurora and RDS vai em criate database
 - marcar e desmarcar as opções:
+
 1. postgresql 17.6R
 2. dev/test ou Sandbox (não precisa de dar upgrade no plano agora)
 3. single-AZ (Multi-AZ só no plano pago)
@@ -184,14 +191,16 @@
 11. dexar em branco o nome inicial do banco, pois vai ser setado ao rodar a migrations
 12. desmarcar backup "Enable automated backup"
 13. deixar marcado (já vem com default) "Enable encryp..."
-14. pegar a senha no final da criação 
-15. pegar a url 
+14. pegar a senha no final da criação
+15. pegar a url
 
 #### Passo 4 - Criar o ECR - Elastic Container Registry
+
 1. criar o repositorio "bia"
 2. voltar para a instancia EC2 e executar o commando "$ docker images", achar a imagem bia-server
 3. imagem está local (dentro do ec2), temos que mandar para o ECR
 4. dentro ECR entrar em "view push commands" para pegar o endereço "600161851259.dkr.ecr.us-east-1.amazonaws.com" e sigo os comandos ou uso o script da pasta "scripts/ecs/unix/
+
 build.sh"
 5. dentro do ec2 pasta "aws-dev-bia" copio o script para a raiz
 6. $ cp scripts/ecs/unix/build.sh .
@@ -200,6 +209,7 @@ build.sh"
 9. Deletar depois - faz cobrança por imagem armazenada nele (gb/mes ou transferencia p/ fora push)
 
 #### Passo 5 - Usando o ECS - Elastic Container Service
+
 1. criar o cluster (poder computacional, precisa colocar maquinas nele, precisa colocar o serviço para as maquinas rodarem)
   - dentro de ECS -> cluster - criate cluster
   1. escolher opcao "Fargate and Self-managend instances"
@@ -226,15 +236,13 @@ build.sh"
       - Amazon ECR
       - CloudWatch Logs
     - revisão confirme que:
-        Não existe Service ativo
-        Não existe Task rodando
-        Não existe Load Balancer
-        Não existe Target Group
-        Não existe EC2 / ASG
-        Cluster deletado
-        ECR limpo (opcional)
-
-
+      Não existe Service ativo
+      Não existe Task rodando
+      Não existe Load Balancer
+      Não existe Target Group
+      Não existe EC2 / ASG
+      Cluster deletado
+      ECR limpo (opcional)
 2. criar task definition (uma task é um container, mas podemos ter mais de um container por task)
   - para criar a task definitio ir no menu as esquerda e clicar em "Task Definition" depois "create new task definition"
   - definir o nome para family: "task-def-bia"
@@ -249,10 +257,10 @@ build.sh"
     - em "Environment variables" pegar do compose.yml dentro do "bia-dev" ou do github
       - $ nano compose.yml
       - adicinar as variaveis:
-        DB_USER: postgres
-        DB_PWD: senha copiada qdo subiu o RDS
-        DB_HOST: ir no RDS e copiar o nome do host
-        DB_PORT: 5432
+      DB_USER: postgres
+      DB_PWD: senha copiada qdo subiu o RDS
+      DB_HOST: ir no RDS e copiar o nome do host
+      DB_PORT: 5432
     - clicar em criate 
     - apos criado achar a opção de "Deploy" e dentro dele "create service"
       - em "service name" colocar "service-bia"
@@ -264,27 +272,26 @@ build.sh"
       - escolher Max 100
       - desmarcar Deployment failure detection  Info, pois qdo der erro vai parar, daí conseguimos ver o que aconteceu
       - em "Task placement" deixar por padrão espalhar as tasks na AZ disponiveis
-
-
 3. criar o service  (responsavel por lançar os container as "tasks"), ele é o task definition (primo do compose)
+
 - o "task definition" muda um pouquinho do compose pois terá informações da imagem, variáveis de ambiente, e fornecer o recurso computacional que vai ser alocado.
-- acesso ao serviço disponivel: http://3.239.247.28/
+- acesso ao serviço disponivel: [http://3.239.247.28/](http://3.239.247.28/)
 
-4. estabelecar comunicação da bia-dev (maquina de trabalho) para bia-db e rodar o migrate para criação das tabelas
- - $ nano compose.yml
-   - ajustar o "environment"
-     - db_pwd: .... colocar o psw do rds
-     - db_host: ... colocar o endereço do rds
- - $ docker ps
- - $ docker compose down
- - $ docker compose up -d
- - $ comando para rodar a migrate dentro do README.md, mas eu não crie comunicacao (sg do bia db aceitando o bia-dev)
-   - docker compose exec server bash -c 'npx sequelize db:migrate'
-   - para resolver vamos usar o AI para criar essa comunicação
-   - kiro-cli chat --agent "bia"
-   - prompt: estou tentando rodar as migrates que eu tenho no projeto para o meu banco no rds, mas esta acontecendo uma demora absurda. consegue me ajudar a identificar o que pode estar acontecendo? estou tentando rodar esse comando: docker compose exec server bash -c 'npx sequelize db:migrate'
+1. estabelecar comunicação da bia-dev (maquina de trabalho) para bia-db e rodar o migrate para criação das tabelas
+  $ nano compose.yml
+  - ajustar o "environment"
+    - db_pwd: .... colocar o psw do rds
+    - db_host: ... colocar o endereço do rds
+     $ docker ps
+     $ docker compose down
+     $ docker compose up -d
+     $ comando para rodar a migrate dentro do README.md, mas eu não crie comunicacao (sg do bia db aceitando o bia-dev)
+  - docker compose exec server bash -c 'npx sequelize db:migrate'
+  - para resolver vamos usar o AI para criar essa comunicação
+  - kiro-cli chat --agent "bia"
+  - prompt: estou tentando rodar as migrates que eu tenho no projeto para o meu banco no rds, mas esta acontecendo uma demora absurda. consegue me ajudar a identificar o que pode estar acontecendo? estou tentando rodar esse comando: docker compose exec server bash -c 'npx sequelize db:migrate'
+2. Fazer o deploy dentro do bia-dev (antes fizemos o migrate no RDS)
 
-5. Fazer o deploy dentro do bia-dev (antes fizemos o migrate no RDS)
 - alterar o texto do botao html dentro do bia-dev
   - ir ate AddTask.jsx dentro do clent/scr/components
 - alterar o endereço para a instancia do ECS
@@ -295,7 +302,7 @@ build.sh"
   - $ nao preciso dar o comando de build pois o deploysh faz (./build.sh)
   - $ cp scripts/ecs/unix/deploy.sh .
   - $ nano deploy
-    $ alterar o [cluster] e [service] para cluster-bia e service-bia sem os []
+  $ alterar o [cluster] e [service] para cluster-bia e service-bia sem os []
   - $ chmod +x deploy.sh
   - $ ./deploy.sh
   - se for no cluster (ECS), dentro de service, tem aba deploynments para aconpanhar o processo
@@ -303,7 +310,8 @@ build.sh"
 - dispara um push para o ECR, depois dispara um deploy para o ECS
 - problema de deploy pois um sobrepoe ao outro
 
-6. Fazer o versionamento do deploy com AI
+1. Fazer o versionamento do deploy com AI
+
 - cada deploy deve guardar task definitions com as informações
   - entao dentro de ECS e depois Task definitions deve ser incrementado ex: task-def-bia:4, depois task-def-bia:6, ...
 - $ prompt: estou precisando de um rotina de deploy que não sobreponha a que eu já tenho, quero que essa rotina de deploy seja simples, mas permita que eu trabalhe com versionamento no ECS. Eu preciso trabalhar com commit hash para criar tags das minhas versoes no ECR e com isso voce vai gerar uma task definition para cada uma delas e realizar o deploy no ECS. Analise o que precise ser feito para que eu veja antes de estar tudo ok.
@@ -314,7 +322,8 @@ build.sh"
 - $ git add .
 - $ git commit -m "add new deploy"
 
-7. Configuração de dominio ( Route 53 e ACM/Certificate Manager)
+1. Configuração de dominio ( Route 53 e ACM/Certificate Manager)
+
 - Route 53 - controle do dominio e subdominio, entrada dos DNS
   - criar uma hosted zones, e pegar os endereços ns e atualizar lá no registro.br
 - ACM - certificado digital para https
@@ -323,12 +332,15 @@ build.sh"
   - dentro do acm, criar um request "request public certificate"
   - colocar o "fully qualified domain name" específico bia.devblue.com.br ou *.devblue.com.br para resolver qualquer coisa dentro do devblue
   - 
-8. revisão do dia 1
+
+1. revisão do dia 1
+
 - prompt: forneça um diagnostico simples da minha aplicação, confirmando se ela esta rodando perfeitamente no ecs
 
 ## Dia 2  - Manhã
 
 #### Passo 1 - Security groups para alta disp9onivilidade
+
 - criar o sg "bia-alb" com all TCP apenas para o ALB, para comunicar com o novo sg "bia-ec2"
   - add 1 inbound rules type http (porta 80),  source type ipv4, 0.0.0.0/0, liberado geral para fora
   - add 1 inbound rules type https (porta 443), source type ipv4, 0.0.0.0/0 liberado geral para fora
@@ -338,6 +350,7 @@ build.sh"
   - add 1 inbound rules type "postgres" para o source custom sg "bia-ec2", liberado banco para o "bia-ec2"
 
 #### Passo 2 - ALB - Target group
+
 - ALB - load balanced tem um listener ( para escutar a porta 80 ) e daí manda para o target group
   - Target group vai rotear os trafego para as instancias EC2 que fazem parte do cluster
     - o tg encaminha as requisicoes para as instancias ec2
@@ -354,7 +367,9 @@ build.sh"
     - name "tg-bia"
     - tudo padrao, next, next, create ..
     - depois de criado, vai na aba horizontal "Attributes"
+
 #### Passo 3 - Remover o cluster anterior e criar um novo
+
 - abrir o ECS e marcar o "cluster-bia"
   - primeiro ir na aba horizontal "service" e deletar o service (marcar forçar)
   - segundo ir para o cluster e deletar o cluster
@@ -395,12 +410,13 @@ build.sh"
       - create, daí ele vai lançar duas tasks automaticamento depois que o seviço foi criado
     - Como testar?
       - vai em Load Balancers "bia-alb" e copia o dns e coloca no navegador
-        - Load balancers http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/
+        - Load balancers [http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/](http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/)
 
-#### Passo 4 - Bia com alta disponibilidade - 
+#### Passo 4 - Bia com alta disponibilidade -
+
 - Acessar o app pelo ALB
   - vai em Load Balancers "bia-alb" e copia o dns e coloca no navegador
-    - Load balancers http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/
+    - Load balancers [http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/](http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/)
 - Explorar o resource map
   - EC2 -> load balancers -> bia-alb -> 
     - aba horizontal -> "Resource map"
@@ -414,7 +430,7 @@ build.sh"
   - copiar o endereço do aplication load balance
   - ir em instancias e conectar na bia-dev (vai ser nela que vou alterar os scripts de deploy)
   - editar o dockerfile
-    - $ nano /aws-dev-bia/Dockerfile, trocar o endereço http://bia-alb-2034249656.us-east-1.elb.amazonaws.com
+    - $ nano /aws-dev-bia/Dockerfile, trocar o endereço [http://bia-alb-2034249656.us-east-1.elb.amazonaws.com](http://bia-alb-2034249656.us-east-1.elb.amazonaws.com)
     - $ nano deploy.sh   # mudar para o cluster-bia-alb e mudar o service par service-bia-alb
       - o script de deploy.sh esta simples e trabalha só com latest, temos que ir no ECS e depois no task definition para ver onde ele está apontando
       - abrir o "task-def-bia-alb", e clinar na ultima revision
@@ -435,7 +451,7 @@ build.sh"
       - abrir 2 terminais da bia-dev
         - na primeio deixo preparado para disparar o "./check..."
         - no segundo atualizo o botão e dou um deploy
-        - endereço http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/api/versao uso como healfycheck
+        - endereço [http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/api/versao](http://bia-alb-2034249656.us-east-1.elb.amazonaws.com/api/versao) uso como healfycheck
         - para acompanhar na AWS, podemos ver direto no ECS - cluster - "cluster-bia-alb"/"service-bia-alb"
           - em Service revisions (2) 
             - no Target (versão nova/destino) vai ter 1 Requested (0 - Running)
@@ -444,24 +460,75 @@ build.sh"
               - 7649397389232491386|View tasks-Target-2 Requested-2 Running-0 Pending-task-def-bia-alb:2
               - 7777165179419921139|View tasks-Source-0 Requested-0 Running-0 Pending-task-def-bia-alb:2
             - Obs ( Depois de disparar)
-              - 
-#### Passo 5 - Problema(Deploy precisa de um script na nossa maquina para acontecer) -  Solução(Pipeline CI/CD)
+#### Passo 5 - Problema(Deploy precisa de um script na nossa maquina para acontecer)
+- Solução(Pipeline CI/CD)
+  - ao realizar um push no branch main vai ser disparado um pipeline (fluxo ci/cd)
+    - um hook no github vai ser dispado ao receber o push no branch main
+  - vai ser configurado no bia-dev
+- Configurar o Code Pipeline com a conta e o repositorio
+  - ir em create new pipeline
+  - escolher build custom pipeline
+  - name: bia
+  - execution: superseaded (para o atual e manda outro), paralled caso queira testar integraçao continua
+  - next  
+  - source provider: github
+  - conectar ao git hub
+  - app installation: escolher se tiver ou instalar qdo for nova e escolher o repositorio e depois "conect"
+  - voltando escolher o repositorio e o branch
+  - no build: escoloher "Other build providers" escolher "AWS Code build"
+  - projetc name: criar um novo project com o nome: "bia-build" e deixar default as opções do projeto
+  - expandir "Additional configuration" e marcar "Enable this flag if you want to build Docker ...."
+  - adicionar o "buldspec", escolher "user a buildspec file" 
+  - dar skip na fase de test
+  - desmarcar "configure automatic"
+  - informar no Add Deploy Stage "Amazon ECS"
+  - informar o cluster name: "cluster-bia-alb"
+  - informar o service: "service-bia-alb"
+  - no image definition: deixar a convesão (nao mexer)
+  - create pipeline
+- Ajustar o Build Project
+  - selecionar o bio-build
+  - ver o build logs
+  - entrar no ECR -> latest e copiar a URI
+  - entrar na instancia do bia-dev e 
+    - nano buildspec.yml para alterar a URI
+    - git add buildspec.yml
+    - git commit -m "correção do usuario de buildspec"
+- Criar o Code Pipeline
+  - criar o arquivo buildspec.yml
+    - ajustar o id da conta dentro do buildspec.yml
+  - criar o bia-pipeline no Code Pipeline
+  - criar o Code Build
+  - Configurar Deployment
+  - ajustar o usuario (erro no build)
+  - ajustar autorização da role (erro no build)
+    - ir no IAM e achar a role "codebuild-bia-build-service-role" que foi criada ao criar o "criar o build pipeline"
+    - qual permissao faltou? autenticar no ECR
+      - add role "..containerRegistryPowerUser"
+      - volta ao Pipe Line -> clica em Retry
+      - depois que o build passou ir para o ECS
+      - abrir o servico e ver se as tasks rodando
+
+#### Passo 6 - Dominio com https
+- configurar ALB e Listener
+- configurando o Route 53
+- Fazerndo deploy com ajustes no Dockerfile (env do vite)
 
 
 
 ## Dia 2  - Tarde
 
-
 - Teste pela rota de backend (/api/versao)
 
 ## Recursos criados que tenho que deletar na zona para trabalho
+
 1. uma instancia EC2
 2. security groups (SGs)
- - bia-dev
- - bia-web
- - bia-db
+  bia-dev
+   bia-web
+   bia-db
 3. um RDS database
-4. 
+
 
 ## Sequencia pra a de configuração de recursos
 
