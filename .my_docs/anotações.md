@@ -513,6 +513,52 @@ build.sh"
 - configurar ALB e Listener
 - configurando o Route 53
 - Fazerndo deploy com ajustes no Dockerfile (env do vite)
+- Primeira ação
+  - no ACM verificar se o certificado está como emitido "issued"
+  - no EC2 ir em "Load Balancers" -> "bia-alb"
+    - achar no menu horizontal "Listeners e rules"
+      - temos listener configurado para a porta 80, vamos configurar para Https 443
+      - add listener e selecionar Https 443
+      - qdo bater na 443 vo mandar para o target group 
+        - selecionar o "tg-bia"
+      - dai selecionar o certificado  (from ACM), no caso o que foi configurado no ACM vai aparecer
+- Segunda ação
+  - ir no Route 53 se selecionar 2 entradas
+    - selecioar DNS -> Hosted zones -> selecionar o devblue.com.br e "create record"    
+    - clicar em "create record" -> ipv4 - Qual é o dominio/subdominio que vou ultilizar? "formacao-aws.devblue.com.br"
+      - record name: formacao-aws
+      - record type: A - Routes ... (ipv4)
+      - ativar/marcar "Alias"
+      - selecionar "Alias to Application and Classic Load Balancer"
+      - selecionar regiao "Us East (N. Virginia)"
+      - selecionar o load balancer "dualstack.bia-alb-xxxxx.us.east-1.elb.amazonaws.com"
+      - create record (finalizar)
+    - repetir e clicar em "create record" para criar para o ipv6
+      - record type: AAA - Routes ... (ipv6)
+    - fazer o teste se está funcinando acessando "formacao-aws.devblue.com.br"
+    - falta apontar a api para o novo dns (endereço)
+- Terceira ação - como fazer a troca do endereço da api para apontar para o dominio e não mais para o ip?
+  - entrar no EC2 e conectar no bia-dev
+  - trocar o ip para o enderço no Dockerfile dentro do 
+  - nano Dockerfile
+  - git pull --no-rebase
+  - git add Dockefile
+  - git commit -m "troca do ip para endereço na api"
+  - git push origin main
+
+#### Passo 7 - Criar infra usando liguagem natural
+- arquitetura que vamos montar
+- estou 2 instancias com 1vcpu e 500mb sem uso ( pois estou usando estrategia é "AZ Balance Spreed")
+  - zona a (2vcpu + 900mb) 
+    - ao colocar 1 instancia (1vcpu + 400mb) 
+    - fica livre 1vcpu + 500mb
+  - zona b (2vcpu + 900mb)
+    - ao colocar 1 instancia (1vcpu + 400mb) 
+    - fica livre 1vcpu + 500mb
+- E se eu criar um novo service? Para aproveitar o meu cluster?
+  - para ver esse cenario antes de criar, vou  em ECS->cluster->cluster-bia-alb->infrastructure->container instances (2)
+  - então podemos criar um novo service e aproveitar o loadbalancer
+  - 
 
 
 
