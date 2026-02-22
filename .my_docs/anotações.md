@@ -558,7 +558,21 @@ build.sh"
 - E se eu criar um novo service? Para aproveitar o meu cluster?
   - para ver esse cenario antes de criar, vou  em ECS->cluster->cluster-bia-alb->infrastructure->container instances (2)
   - então podemos criar um novo service e aproveitar o loadbalancer
-  - 
+  - já temos o tb-bia ( Mas o que o tg-bia faz? qual sua função?)
+- Criar um novo targetGroup "tg-bia-dev" para que nosso listener (não sei quem é o listener rsrs), passe a mandar ou para o tg-bia (instancias antigas que já estavam configuradas) ou para o novo tg-bia-dev que tambem vai gerenciar 2 novas instancias com um novo task-definition esclusivo para atender essas novas instancias  
+  - primeiro vamos ajustar o listener para verificar qual o endereço (novo formacao-dev.devblue.com.br) e o (antigo formacao-aws.devblue.com.br)
+  - listener vai tomar a decisao de qual targetgroup vai receber a requisição, ou seja, o listener entrega para o tg especifico
+  - caso o novo tg-bia-dev receba a requisicao ele encaminha para um novo service "service-dev-alb" ( que vai ser adidionado no cluster atual "cluster-bia-alb" dentro do ECS)
+    - o novo service vai ter sua propria task definition (nova) para que vai criar as novas tasks (instancias e coloca-las dentro das instancias existentes porem consumindo recursos que ainda estão disponiveis/não utilizados)
+    - o que tem dentro de um task definition (variaveis de ambiente, img uri, memoria, cpu)
+  - como criar isso na mão?
+    - ir no tg e criar o novo tg
+    - ir no listener e criar uma regra para o novo endereço (host header para fazer o desvio do trafego)
+    - ir no service e colocar para apontar para um nova revision e executar essa configuração
+    - mas faremos isso tudo com kiro-cli
+Usando o kiro-cli para criar todos os passos
+  - prompt:
+    - preciso de sua ajuda para criar
 
 
 
