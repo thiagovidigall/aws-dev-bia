@@ -570,11 +570,78 @@ build.sh"
     - ir no listener e criar uma regra para o novo endereço (host header para fazer o desvio do trafego)
     - ir no service e colocar para apontar para um nova revision e executar essa configuração
     - mas faremos isso tudo com kiro-cli
-Usando o kiro-cli para criar todos os passos
+- Usando o kiro-cli para criar todos os passos
+  - lembrar:
+    - tg deve ser criado com attribute deregistration delay (draining interval de 30s), para que isso? resp: para o deploy não demorar horrores
   - prompt:
-    - preciso de sua ajuda para criar
+    - preciso de sua ajuda para criação de uma infraestrutura na aws. Nesse Monmento eu tenho um load balancer "bia-alb", um listener na porta 443 e quero criar uma role para quando a request vier de formacao-dev.devblue.com.br (host header) envie para o tg-bia-dev ( que deve ser criado com deregistration delay de 30s). Quero tambem que voce crie um service no meu cluster-bia-alb chamado service-bia-alb-dev. Esse service deve apontar para a mesma task-definition do service-bia-alb e ter as mesmas configurações exceto o target group que deve ser o que estamos criando "tg-bia-dev". Me descreva antes de executar se compreendeu todos os passos.
+    - Passos a serem executados:
+      1. Criar Target Group tg-bia-dev
+        - Deregistration delay: 30 segundos
+        - Configurações compatíveis com ECS (provavelmente porta 8080 baseado no padrão do projeto)
+
+      2. Criar Listener Rule no listener 443 do bia-alb
+        - Condição: Host header = formacao-dev.devblue.com.br
+        - Ação: Forward para tg-bia-dev
+
+      3. Obter configurações do service existente service-bia-alb
+        - Identificar a task definition utilizada
+        - Capturar configurações relevantes (desired count, launch type, network config, etc)
+
+      4. Criar novo service service-bia-alb-dev
+        - Cluster: cluster-bia-alb
+        - Mesma task definition do service-bia-alb
+        - Mesmas configurações do service original
+        - Target group: tg-bia-dev (diferença principal)
+  - tive problema par subir as tasks do novo service, pois o tg-bia e o service-bia-alb estava usando porta fixa 80 e deveria estar usando portas dinamicas (acabei configurando errado)
+    - Encontrei o problema! A task definition tem hostPort: 80 fixo. Para usar portas dinâmicas, preciso criar uma nova task definition com hostPort: 0 (ou sem especificar hostPort):
+      - parece que o tg fica com a porta 80 mesmo ???,  e só o task definition é que fica com portas dinamicas ????
+    - o que é importante é o task definition deve ser criado para portas dinamicas, pois ele vai ser usado novamente para criar os novos serviços
+    - Resultados:
+      - Target Group tg-bia-new:
+        - Configurado com portas dinâmicas ✅
+        - 2 targets registrados com porta 32768 (porta alta/aleatória) ✅
+        - Ambos targets healthy ✅
+        - Deregistration delay: 30 segundos ✅
+
+      - Service service-bia-alb:
+        - 2 tasks rodando ✅
+        - Task definition: task-def-bia-alb:8 (com hostPort: 0) ✅
+        - Deployment completado ✅
+        - Status: ACTIVE e steady state ✅
+
+      - Portas Dinâmicas Funcionando:
+        - As instâncias estão registradas com porta 32768 (porta alta)
+        - ECS está gerenciando automaticamente as portas
+        - Múltiplas tasks podem rodar na mesma instância agora
+            - pedi para o kiro arrumar para mim, mas ele disse que seria preciso apagar e recriar tudo tg-bia e service-bia-alb, para depois criar os novos tg-bia-dev e service-bia-alb-dev
+
+      - **Portas Dinâmicas Funcionando:**
+        - **tg-bia-new:** Porta 32768
+        - **tg-bia-dev:** Porta 32769
+        - Múltiplas tasks podem rodar nas mesmas instâncias
+        - ECS gerencia automaticamente as portas alta
 
 
+- Faltar criar no Route 53 a entrada para o novo endereço "formacao-dev.devblue.com.br"
+- Outro problema "formacao-dev" está usando a mesma task definition
+  - devemos ir no ECR e usar outra IMG
+  - devemos trocar no Dockerfile da IMG para ele apontar para a nova url
+- Duvida, se eu alterar o codigo no brach main e fazer um push as 2 URLs vão ficar atualizadas com o novo codigo?
+  - não, pois o pipeline configurado para um service e o service configurado é o service-bia-alb, ou seja, o outro service "...dev" mesmo usando a mesma task definition não está configurado no pipeline e não vai ser disparada a alteração feito na IMG ( ECR ).
+
+#### Passo 8 - Parando os recursos para não gerar custos
+  - DB (Aurora e RDS), marcar e tem conhecimento e não marcar snapshot  
+  - Instancias, para primeiro a bia-dev  
+  - ECS
+    - entrar dentro de cada service (update) e em "Desired tasks" modificar task de 2 para 0, depois update
+    - EC2 -> load balance
+      - deletar o bia-alb (Proceeding with this action deletes the load balancer and its listeners)
+      - os target groups vao permanecer e podem ser reutilizados
+    - EC2 -> auto Scaling groups
+      - ir em "action" e colocar em "Desired capacity, Min desired capacity, Max desired capacity" os valores zero na sequencia "0,0,0"
+      - com isso ele vai deletar as instancias automaticamente (Terminated)
+    - ECR - tem pouco custo não precisa mexer por enquanto
 
 ## Dia 2  - Tarde
 
